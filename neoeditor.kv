@@ -1,0 +1,287 @@
+<DialogBox>:
+    Label:
+        id: dialog_text_label
+        #size_hint_y: None
+        text_size: self.width, None
+        #height: self.texture_size[1]
+        font_size: root.height * .1
+        halign: 'center'
+        valign: 'center'
+        text: 'Dialog Text'
+
+<FileChooseBox>:
+    orientation: 'vertical'
+    spacing: 10
+    FileChooserIconView:
+        id: file_icon_view
+        rootpath: './ledfile/'
+        filters: ['*.led']
+        on_selection: filename_textinput.text = self.selection[0].split('/')[-1]
+    TextInput:
+        size_hint_y: .1
+        id: filename_textinput
+        font_size: self.height * .6
+        multiline: False
+        hint_text: 'Dateiname'
+        on_text: root.update_data(self.text)
+
+<DefineBox>:
+    orientation: 'vertical'
+    Label:
+        font_size: root.height * .1
+        text: 'Definiere das LED-Raster\n(Länge x Höhe, maximal 50x50):'
+    BoxLayout:
+        size_hint_y: 0.2
+        spacing: 10
+
+        Label:
+            bold: True
+            font_size: self.height * .6
+            text: 'Raster:'
+        TextInput:
+            id: num_x
+            font_size: self.height * .6
+            multiline: False
+            input_filter: 'int'
+            text: '5'
+            on_text: root.set_matrix(self.text, 'x', self)
+        Label:
+            bold: True
+            font_size: self.height * .6
+            text: ' LEDs x'
+        TextInput:
+            id: num_y
+            font_size: self.height * .6
+            multiline: False
+            input_filter: 'int'
+            text: '5'
+            on_text: root.set_matrix(self.text, 'y', self)
+        Label:
+            bold: True
+            font_size: self.height * .6
+            text: 'LEDs '
+    Label:
+        # Platzhalter
+
+<PopupBox>:
+    orientation: 'vertical'
+    spacing: 5
+
+    BoxLayout:
+        id: content_box
+
+    BoxLayout:
+        size_hint_y: 0.1
+        Button:
+            font_size: self.height * .6
+            text: 'OK'
+            on_release: root.choice_done('ok')
+        Button:
+            font_size: self.height * .6
+            text: 'Abbrechen'
+            on_release: root.choice_done('cancel')
+
+<RooWi>:
+    orientation: 'vertical'
+    BoxLayout:
+        id: menue
+        orientation: 'horizontal'
+        spacing: 20
+        size_hint_y: 0.05
+
+        canvas.before:
+            Color:
+                rgba: 1,1,1,0.3
+            Rectangle:
+                size: self.size
+                pos: self.pos
+
+        BoxLayout:
+            Button:
+                id: new_button
+                text: 'Neu'
+                on_release: app.open_popup(command='new')
+
+            Button:
+                id: open_button
+                text: 'Öffnen'
+                on_release: app.open_popup(command='open')
+
+        BoxLayout:
+            size_hint_x: 1.5
+            Label:
+                #size_hint_x: 0.5
+                text: 'Verzögerung [ms]'
+
+            TextInput:
+                id: delay_label
+                text: '200'
+                font_size: self.height * .6
+                multiline: False
+                input_filter: 'int'
+
+        BoxLayout:
+            Button:
+                id: del_button
+                background_color: [1,0,0,.8]
+                color: [1,1,1,1]
+                font_size: self.height *.6
+                size_hint_x: None
+                width: self.height * .8
+                bold: True
+                text: 'X'
+                on_release: app.del_act_set(set_no_label, set_max_label)
+            Button:
+                id: prev_button
+                size_hint_x: 0.6
+                text: '<'
+                on_release: app.scroll_collection('down', set_no_label, set_max_label)
+
+            Label:
+                canvas.before:
+                    Color:
+                        rgba: 1,1,1,1
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                id: set_no_label
+                size_hint_x: .5
+                color: 0,0,0,1
+                font_size: self.height * .6
+                text: '1'
+            Label:
+                size_hint_x: None
+                width: self.height / 3
+                font_size: self.height * .6
+                text: '/'
+            Label:
+                canvas.before:
+                    Color:
+                        rgba: 1,1,1,1
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                id: set_max_label
+                size_hint_x: .5
+                color: 0,0,0,1
+                font_size: self.height * .6
+                text: '1'
+
+            Button:
+                id: next_button
+                size_hint_x: 0.6
+                text: '>'
+                on_release: app.scroll_collection('up', set_no_label, set_max_label)
+
+        Button:
+            id: save_button
+            text: 'Speichern'
+            on_release: app.open_popup('save', True)#app.generate_led_file()
+
+        ToggleButton:
+            id: play_toggle
+            text: 'PLAY'
+            on_release: app.run_movie(self)
+
+        Button:
+            id: reset_button
+            text: 'Reset'
+            on_release: app.open_popup('reset') #app.reset_matrix()
+
+        ToggleButton:
+            id: live_toggle
+            text: 'Live Test'
+            on_release: app.set_live_test(self)
+
+    BoxLayout:
+        orientation: 'horizontal'
+
+        BoxLayout:
+            id: led_box
+            canvas.before:
+                Color:
+                    rgba: 1,1,1,.6
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+
+        BoxLayout:
+            id: color_box
+            spacing: 10
+            orientation: 'vertical'
+            size_hint_x: 0.2
+
+            ColorWheel:
+                id: col_wheel
+                size_hint_y: 3
+                color: 1,1,1,1
+                on_color: app.set_color(self.color)
+
+            Slider:
+                id: bright_slider
+                size_hint_y: .5
+                value: 100
+                on_value: app.set_bright(self.value)
+
+            Label:
+                canvas.before:
+                    Color:
+                        rgba: col_wheel.color
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                color: (0,0,0,1)
+                bold: True
+                font_size: self.height * .3
+                text: 'Color'
+
+            GridLayout:
+                size_hint_y: None
+                height: self.width
+                cols: 3
+
+                Label:
+                Button:
+                    font_size: self.height * .8
+                    text: '^'
+                    on_release: app.move_set(direction='up')
+                Label:
+                Button:
+                    font_size: self.height * .8
+                    text: '<'
+                    on_release: app.move_set(direction='left')
+                Label:
+                    font_size: self.height * .8
+                    bold: True
+                    text: 'M'
+                Button:
+                    font_size: self.height * .8
+                    text: '>'
+                    on_release: app.move_set(direction='right')
+                Label:
+                Button:
+                    font_size: self.height * .8
+                    text: 'v'
+                    on_release: app.move_set(direction='down')
+                Label:
+
+            Button:
+                id: clear_toggle
+                group: 'toggle_buttons'
+                font_size: self.height * .3
+                text: 'Reset'
+                on_release: app.reset_leds()
+
+            ToggleButton:
+                id: remove_toggle
+                group: 'toggle_buttons'
+                font_size: self.height * .3
+                text: 'LOCK'
+                on_release: app.set_command('col') if self.state == 'normal' else app.set_command('disable')
+
+            ToggleButton:
+                id: scroll_toggle
+                font_size: self.height * .3
+                text: 'AutoScroll'
+                on_release: app.set_auto_scroll(self.state)
+
